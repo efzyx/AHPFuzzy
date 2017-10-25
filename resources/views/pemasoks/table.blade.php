@@ -1,4 +1,5 @@
 <table class="table table-responsive" id="pemasoks-table">
+  @if (!empty(count($pemasoks)))
     <thead>
         <tr>
             <th>#</th>
@@ -9,6 +10,7 @@
     <tbody>
       @php
         $no = 1;
+        // dd($pemasoks);
       @endphp
     @foreach($pemasoks as $pemasok)
         <tr>
@@ -25,4 +27,7 @@
         </tr>
     @endforeach
     </tbody>
+  @else
+    Data Kosong
+  @endif
 </table>

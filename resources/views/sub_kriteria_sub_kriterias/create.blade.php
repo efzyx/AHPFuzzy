@@ -48,7 +48,12 @@
         <div class="clearfix"></div>
         <div class="box box-primary">
             <div class="box-body">
-                    @include('sub_kriteria_sub_kriterias.table')
+              @if (!empty(count($subKriteriaSubKriterias)))
+                @include('sub_kriteria_sub_kriterias.table')
+              @else
+                Data Kosong.
+              @endif
+
             </div>
         </div>
     </div>

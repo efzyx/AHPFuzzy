@@ -1,4 +1,5 @@
 <table class="table table-responsive" id="kriterias-table">
+  @if(!empty(count($kriterias)))
     <thead>
         <tr>
             <th>#</th>
@@ -30,4 +31,7 @@
         </tr>
     @endforeach
     </tbody>
+  @else
+    Data Kosong.
+  @endif
 </table>

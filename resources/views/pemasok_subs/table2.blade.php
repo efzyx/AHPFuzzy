@@ -9,6 +9,7 @@
     <div class="clearfix"></div>
   <h4><strong>{!! $v->nama_kriteria !!}</strong></h4>
   <table class="table table-responsive" id="pemasokSubs-table">
+    @if (!empty(count($psk)))
       <thead>
           <tr>
           <th>#</th>
@@ -39,5 +40,8 @@
           </tr>
       @endforeach
       </tbody>
+    @else
+      Data Kosong
+    @endif
   </table>
 @endforeach

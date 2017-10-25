@@ -1,4 +1,5 @@
 <table class="table table-responsive" id="experts-table">
+  @if (!empty(count($experts)))
     <thead>
         <tr>
             <th>#</th>
@@ -37,4 +38,7 @@
         </tr>
     @endforeach
     </tbody>
+  @else
+    Data Kosong.
+  @endif
 </table>
