@@ -129,7 +129,7 @@ class ResultController extends Controller
       $experts    = Expert::all();
       $kriteriaKriteria = KriteriaKriteria::all();
 
-      $dataKriteria = [];
+      $dataKriteria = null;
       foreach ($experts as $e) {
         $kk = $kriteriaKriteria->where('expert_id', '=', $e->id);
           foreach ($kriterias as $k1) {
@@ -148,67 +148,70 @@ class ResultController extends Controller
             }
         }
       }
-      foreach ($dataKriteria as $kdK => $dK) {
-        $mValue = null; //nilai M
-        $tList = null; //nilai Total
 
-        $n = 0;
-        foreach ($dK as $key => $value) {
-          $mValue[] = pow(array_product($value),(1/count($dK)));
-          $mTotal = 0;
-          foreach ($dK as $k => $v) {
-            $mTotal += $dK[$k][$n];
-          }
-          $n++;
-          $tList[] = $mTotal;
-        }
-        //nilai M total
-        $mTotal = pow(array_product($tList), 1/count($dK));
+      if ($dataKriteria != null) {
+        foreach ($dataKriteria as $kdK => $dK) {
+          $mValue = null; //nilai M
+          $tList = null; //nilai Total
 
-        //menghitung nilai bobot lokal
-        $bobotLokal = null;
-        foreach ($mValue as $key => $value) {
-          # code...
-          $bobotLokal[] = $value/$mTotal;
-        }
-        //dd($bobotLokal);
-        //menghitung nilai vektor bobot
-        $vektorBobotList = null;
-        foreach ($dK  as $key => $value) {
-          $vektorBobot = 0;
-          //dd($vb);
-          //dd($value);
-          foreach ($value as $k => $v) {
-              $vektorBobot += $v * $bobotLokal[$k];
-              //var_dump($v);
-              //var_dump($vektorBobot);
+          $n = 0;
+          foreach ($dK as $key => $value) {
+            $mValue[] = pow(array_product($value),(1/count($dK)));
+            $mTotal = 0;
+            foreach ($dK as $k => $v) {
+              $mTotal += $dK[$k][$n];
             }
-          $vektorBobotList[] = $vektorBobot;
-        }
+            $n++;
+            $tList[] = $mTotal;
+          }
+          //nilai M total
+          $mTotal = pow(array_product($tList), 1/count($dK));
 
-        //dd($vektorBobotList);
-        //menghitung nilai W/w
-        $Wperw = null;
-        foreach ($vektorBobotList as $key => $value) {
-          $Wperw[] = $value / $bobotLokal[$key];
-        }
+          //menghitung nilai bobot lokal
+          $bobotLokal = null;
+          foreach ($mValue as $key => $value) {
+            # code...
+            $bobotLokal[] = $value/$mTotal;
+          }
+          //dd($bobotLokal);
+          //menghitung nilai vektor bobot
+          $vektorBobotList = null;
+          foreach ($dK  as $key => $value) {
+            $vektorBobot = 0;
+            //dd($vb);
+            //dd($value);
+            foreach ($value as $k => $v) {
+                $vektorBobot += $v * $bobotLokal[$k];
+                //var_dump($v);
+                //var_dump($vektorBobot);
+              }
+            $vektorBobotList[] = $vektorBobot;
+          }
 
-        $data = [
-          "dataKriteria" => $dK,
-          "mValue" => $mValue,
-          "tList" => $tList,
-          "mTotal"  => $mTotal,
-          "bobotLokal" => $bobotLokal,
-          "bobotVektor"  => $vektorBobotList,
-          "Wperw" => $Wperw,
-          "expert_id" => $kdK
-        ];
-        //dd(serialize($data));
-        $store = new ExpertKriteriaComparison();
-        $store->data = serialize($data);
-        $hasil = $store->save();
-        if(!$hasil){
-          return false;
+          //dd($vektorBobotList);
+          //menghitung nilai W/w
+          $Wperw = null;
+          foreach ($vektorBobotList as $key => $value) {
+            $Wperw[] = $value / $bobotLokal[$key];
+          }
+
+          $data = [
+            "dataKriteria" => $dK,
+            "mValue" => $mValue,
+            "tList" => $tList,
+            "mTotal"  => $mTotal,
+            "bobotLokal" => $bobotLokal,
+            "bobotVektor"  => $vektorBobotList,
+            "Wperw" => $Wperw,
+            "expert_id" => $kdK
+          ];
+          //dd(serialize($data));
+          $store = new ExpertKriteriaComparison();
+          $store->data = serialize($data);
+          $hasil = $store->save();
+          if(!$hasil){
+            return false;
+          }
         }
       }
       return $hasil;
