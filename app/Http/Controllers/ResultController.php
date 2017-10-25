@@ -63,6 +63,9 @@ class ResultController extends Controller
 
         return \App::make('redirect')->back();
       }
+      Flash::error('Gagal generate!');
+
+      return \App::make('redirect')->back();
     }
 
     public function gAhpSub(){
@@ -71,6 +74,9 @@ class ResultController extends Controller
 
         return \App::make('redirect')->back();
       }
+      Flash::error('Gagal generate!');
+
+      return \App::make('redirect')->back();
     }
 
     public function gAhpPem(){
@@ -79,6 +85,9 @@ class ResultController extends Controller
 
         return \App::make('redirect')->back();
       }
+      Flash::error('Gagal generate!');
+
+      return \App::make('redirect')->back();
     }
 
     public function gFuzKri(){
@@ -87,6 +96,9 @@ class ResultController extends Controller
 
         return \App::make('redirect')->back();
       }
+      Flash::error('Gagal generate!');
+
+      return \App::make('redirect')->back();
     }
 
     public function gFuzSub(){
@@ -95,6 +107,9 @@ class ResultController extends Controller
 
         return \App::make('redirect')->back();
       }
+      Flash::error('Gagal generate!');
+
+      return \App::make('redirect')->back();
     }
 
     public function gFuzPem(){
@@ -103,6 +118,9 @@ class ResultController extends Controller
 
         return \App::make('redirect')->back();
       }
+      Flash::error('Gagal generate!');
+
+      return \App::make('redirect')->back();
     }
     public function storeResult(){
       $hasil = false;
@@ -111,7 +129,7 @@ class ResultController extends Controller
       $experts    = Expert::all();
       $kriteriaKriteria = KriteriaKriteria::all();
 
-      $dataKriteria = null;
+      $dataKriteria = [];
       foreach ($experts as $e) {
         $kk = $kriteriaKriteria->where('expert_id', '=', $e->id);
           foreach ($kriterias as $k1) {
@@ -229,73 +247,76 @@ class ResultController extends Controller
         }
       }
       // dd($dataKriteria);
-      foreach ($dataKriteria as $Kkey => $dKs) {
-        # code...
-        foreach ($dKs as $dKkey => $dKvalue) {
+      if ($dataKriteria != null) {
+        foreach ($dataKriteria as $Kkey => $dKs) {
           # code...
-          $mValue = null; //nilai M
-          $tList = null; //nilai Total
-
-          $n = 0;
-          foreach ($dKvalue as $key => $value) {
-            $mValue[] = pow(array_product($value),(1/count($dKvalue)));
-            $mTotal = 0;
-            foreach ($dKvalue as $k => $v) {
-              $mTotal += $dKvalue[$k][$n];
-            }
-            $n++;
-            $tList[] = $mTotal;
-          }
-          $mTotal = pow(array_product($tList), 1/count($dKvalue));
-
-          //menghitung nilai bobot lokal
-          $bobotLokal = null;
-          foreach ($mValue as $key => $value) {
+          foreach ($dKs as $dKkey => $dKvalue) {
             # code...
-            $bobotLokal[] = $value/$mTotal;
-          }
-          //dd($bobotLokal);
-          //menghitung nilai vektor bobot
-          $vektorBobotList = null;
-          foreach ($dKvalue  as $key => $value) {
-            $vektorBobot = 0;
-            //var_dump($vb);
-            //dd($value);
-            foreach ($value as $k => $v) {
-                $vektorBobot += $v * $bobotLokal[$k];
-                //var_dump($v);
-                //var_dump($vektorBobot);
+            $mValue = null; //nilai M
+            $tList = null; //nilai Total
+
+            $n = 0;
+            foreach ($dKvalue as $key => $value) {
+              $mValue[] = pow(array_product($value),(1/count($dKvalue)));
+              $mTotal = 0;
+              foreach ($dKvalue as $k => $v) {
+                $mTotal += $dKvalue[$k][$n];
               }
-            $vektorBobotList[] = $vektorBobot;
+              $n++;
+              $tList[] = $mTotal;
+            }
+            $mTotal = pow(array_product($tList), 1/count($dKvalue));
+
+            //menghitung nilai bobot lokal
+            $bobotLokal = null;
+            foreach ($mValue as $key => $value) {
+              # code...
+              $bobotLokal[] = $value/$mTotal;
+            }
+            //dd($bobotLokal);
+            //menghitung nilai vektor bobot
+            $vektorBobotList = null;
+            foreach ($dKvalue  as $key => $value) {
+              $vektorBobot = 0;
+              //var_dump($vb);
+              //dd($value);
+              foreach ($value as $k => $v) {
+                  $vektorBobot += $v * $bobotLokal[$k];
+                  //var_dump($v);
+                  //var_dump($vektorBobot);
+                }
+              $vektorBobotList[] = $vektorBobot;
+            }
+
+            //dd($vektorBobotList);
+            //menghitung nilai W/w
+            $Wperw = null;
+            foreach ($vektorBobotList as $key => $value) {
+              $Wperw[] = $value / $bobotLokal[$key];
+            }
+
+            $data = [
+              "dataKriteria" => $dKvalue,
+              "mValue" => $mValue,
+              "tList" => $tList,
+              "mTotal"  => $mTotal,
+              "bobotLokal" => $bobotLokal,
+              "bobotVektor"  => $vektorBobotList,
+              "Wperw" => $Wperw
+            ];
+
+            $store = new ExpertSubComparison();
+            $store->data = serialize($data);
+            $store->kriteria_id = $Kkey;
+            $hasil = $store->save();
+            if(!$hasil){
+              return false;
+            }
           }
 
-          //dd($vektorBobotList);
-          //menghitung nilai W/w
-          $Wperw = null;
-          foreach ($vektorBobotList as $key => $value) {
-            $Wperw[] = $value / $bobotLokal[$key];
-          }
-
-          $data = [
-            "dataKriteria" => $dKvalue,
-            "mValue" => $mValue,
-            "tList" => $tList,
-            "mTotal"  => $mTotal,
-            "bobotLokal" => $bobotLokal,
-            "bobotVektor"  => $vektorBobotList,
-            "Wperw" => $Wperw
-          ];
-
-          $store = new ExpertSubComparison();
-          $store->data = serialize($data);
-          $store->kriteria_id = $Kkey;
-          $hasil = $store->save();
-          if(!$hasil){
-            return false;
-          }
         }
-
       }
+
       return $hasil;
     }
 
@@ -346,73 +367,73 @@ class ResultController extends Controller
         }
 
         // dd($dataKriteria);
-        $ha = [];
-        foreach ($dataKriteria as $key => $value) {
-          $sifu = [];
-          foreach ($value as $k => $v) {
-            $l =0;
-            $m = 0;
-            $u = 0;
-            foreach ($v as $kunci => $nilai) {
-              $l += $nilai[0];
-              $m +=$nilai[1];
-              $u +=$nilai[2];
+        if ($dataKriteria != null) {
+          $ha = [];
+          foreach ($dataKriteria as $key => $value) {
+            $sifu = [];
+            foreach ($value as $k => $v) {
+              $l =0;
+              $m = 0;
+              $u = 0;
+              foreach ($v as $kunci => $nilai) {
+                $l += $nilai[0];
+                $m +=$nilai[1];
+                $u +=$nilai[2];
+              }
+              $sifu[] = [$l, $m, $u];
+            //  echo json_encode($sifu);
             }
-            $sifu[] = [$l, $m, $u];
-          //  echo json_encode($sifu);
-          }
-          // $sum = array_sum($sifu[0]);
-          $tl=0;
-          $tm=0;
-          $tu=0;
+            // $sum = array_sum($sifu[0]);
+            $tl=0;
+            $tm=0;
+            $tu=0;
 
-          foreach ($sifu as $ks => $vs) {
-            $tl += $vs[0];
-            $tm += $vs[1];
-            $tu += $vs[2];
-          }
+            foreach ($sifu as $ks => $vs) {
+              $tl += $vs[0];
+              $tm += $vs[1];
+              $tu += $vs[2];
+            }
 
-          // dd($tl);
-          $sifuArray = [$tl, $tm, $tu];
-          $Si = [];
-          foreach ($sifu as $key => $value) {
-            $Si[] = [$value[0]/ $tu, $value[1]/$tm, $value[2]/$tl];
-          }
-          // var_dump(json_encode($Si));
-          // echo "<br>";
-          // echo "<br>";
-          $sintesis = ["jumlah"=>$sifu, "total"=>$sifuArray, "si"=>$Si];
-          // dd($sifu);
-          $vektoArray = [];
-          foreach ($Si as $key => $value) {
-            $vektor = [];
-            foreach ($Si as $k => $v) {
-              if($key!=$k){
-                if ($value[1]>=$v[1]) {
-                  $vektor[] = 1;
-                }elseif ($v[0]>=$value[2]) {
-                  $vektor[] = 0;
-                }else{
-                  $vektor[]=($v[0]-$value[2])/(($value[1]-$value[2])-($v[1]-$v[0]));
+            // dd($tl);
+            $sifuArray = [$tl, $tm, $tu];
+            $Si = [];
+            foreach ($sifu as $key => $value) {
+              $Si[] = [$value[0]/ $tu, $value[1]/$tm, $value[2]/$tl];
+            }
+            // var_dump(json_encode($Si));
+            // echo "<br>";
+            // echo "<br>";
+            $sintesis = ["jumlah"=>$sifu, "total"=>$sifuArray, "si"=>$Si];
+            // dd($sifu);
+            $vektoArray = [];
+            foreach ($Si as $key => $value) {
+              $vektor = [];
+              foreach ($Si as $k => $v) {
+                if($key!=$k){
+                  if ($value[1]>=$v[1]) {
+                    $vektor[] = 1;
+                  }elseif ($v[0]>=$value[2]) {
+                    $vektor[] = 0;
+                  }else{
+                    $vektor[]=($v[0]-$value[2])/(($value[1]-$value[2])-($v[1]-$v[0]));
+                  }
                 }
               }
+              $vektoArray[] = $vektor;
             }
-            $vektoArray[] = $vektor;
-          }
-          // dd($vektoArray);
-          // $ha[] = $Si;
-          $data = ["sisntesis" => $sintesis, "vektor"=>$vektoArray];
-          // $ha[] = $data;
-          $objek = new FuzzyKriteria();
-          $objek->data = serialize($data);
-          $hasil = $objek->save();
-          if(!$hasil){
-            return false;
-          }
+            // dd($vektoArray);
+            // $ha[] = $Si;
+            $data = ["sisntesis" => $sintesis, "vektor"=>$vektoArray];
+            // $ha[] = $data;
+            $objek = new FuzzyKriteria();
+            $objek->data = serialize($data);
+            $hasil = $objek->save();
+            if(!$hasil){
+              return false;
+            }
 
+          }
         }
-
-        // dd($ha);
         return $hasil;
     }
 
@@ -466,79 +487,82 @@ class ResultController extends Controller
        }
      }
     //  dd($dataKriteria);
-    $la=[];
-     foreach ($dataKriteria as $kKri => $dKri) {
-       # code...
-       foreach ($dKri as $key => $value) {
-         $sifu = [];
-         foreach ($value as $k => $v) {
-           $l =0;
-           $m = 0;
-           $u = 0;
-           foreach ($v as $kunci => $nilai) {
-             $l += $nilai[0];
-             $m +=$nilai[1];
-             $u +=$nilai[2];
+    if ($dataKriteria!= null) {
+      $la=[];
+       foreach ($dataKriteria as $kKri => $dKri) {
+         # code...
+         foreach ($dKri as $key => $value) {
+           $sifu = [];
+           foreach ($value as $k => $v) {
+             $l =0;
+             $m = 0;
+             $u = 0;
+             foreach ($v as $kunci => $nilai) {
+               $l += $nilai[0];
+               $m +=$nilai[1];
+               $u +=$nilai[2];
+             }
+             $sifu[] = [$l, $m, $u];
+           //  echo json_encode($sifu);
            }
-           $sifu[] = [$l, $m, $u];
-         //  echo json_encode($sifu);
-         }
-         // $sum = array_sum($sifu[0]);
-         $tl=0;
-         $tm=0;
-         $tu=0;
+           // $sum = array_sum($sifu[0]);
+           $tl=0;
+           $tm=0;
+           $tu=0;
 
-         foreach ($sifu as $ks => $vs) {
-           $tl += $vs[0];
-           $tm += $vs[1];
-           $tu += $vs[2];
-         }
+           foreach ($sifu as $ks => $vs) {
+             $tl += $vs[0];
+             $tm += $vs[1];
+             $tu += $vs[2];
+           }
 
-        //  dd($tu);
-         $sifuArray = [$tl, $tm, $tu];
-        //  dd($sifu);
-         $Si = [];
-         foreach ($sifu as $key => $value) {
-           $Si[] = [$value[0]/ $tu, $value[1]/$tm, $value[2]/$tl];
-         }
-        //  dd($Si);
-         $sintesis = ["jumlah"=>$sifu, "total"=>$sifuArray, "si"=>$Si];
-        //  dd($sintesis);
-         // dd($sintesis);
-         $vektoArray = [];
-         foreach ($Si as $key => $value) {
-           # code...
-           $vektor = [];
-           foreach ($Si as $k => $v) {
+          //  dd($tu);
+           $sifuArray = [$tl, $tm, $tu];
+          //  dd($sifu);
+           $Si = [];
+           foreach ($sifu as $key => $value) {
+             $Si[] = [$value[0]/ $tu, $value[1]/$tm, $value[2]/$tl];
+           }
+          //  dd($Si);
+           $sintesis = ["jumlah"=>$sifu, "total"=>$sifuArray, "si"=>$Si];
+          //  dd($sintesis);
+           // dd($sintesis);
+           $vektoArray = [];
+           foreach ($Si as $key => $value) {
              # code...
-             if($key!=$k){
-               if ($value[1]>=$v[1]) {
-                 # code...
-                 $vektor[] = 1;
-               }elseif ($v[0]>=$value[2]) {
-                 # code...
-                 $vektor[] = 0;
-               }else{
-                 $vektor[]=($v[0]-$value[2])/(($value[1]-$value[2])-($v[1]-$v[0]));
+             $vektor = [];
+             foreach ($Si as $k => $v) {
+               # code...
+               if($key!=$k){
+                 if ($value[1]>=$v[1]) {
+                   # code...
+                   $vektor[] = 1;
+                 }elseif ($v[0]>=$value[2]) {
+                   # code...
+                   $vektor[] = 0;
+                 }else{
+                   $vektor[]=($v[0]-$value[2])/(($value[1]-$value[2])-($v[1]-$v[0]));
+                 }
                }
              }
+             $vektoArray[] = $vektor;
            }
-           $vektoArray[] = $vektor;
-         }
-         $la[] = $Si;
-        //  dd($Si);
-        //  dd($vektoArray);
-         $data = ["sisntesis" => $sintesis, "vektor"=>$vektoArray];
-         $ha[] = $data;
-         $objek = new FuzzySub();
-         $objek->data = serialize($data);
-         $objek->kriteria_id = $kKri;
-         $hasil = $objek->save();
-         if(!$hasil){
-           return false;
+           $la[] = $Si;
+          //  dd($Si);
+          //  dd($vektoArray);
+           $data = ["sisntesis" => $sintesis, "vektor"=>$vektoArray];
+           $ha[] = $data;
+           $objek = new FuzzySub();
+           $objek->data = serialize($data);
+           $objek->kriteria_id = $kKri;
+           $hasil = $objek->save();
+           if(!$hasil){
+             return false;
+           }
          }
        }
-     }
+    }
+
     //  dd($la);
      return $hasil;
    }
@@ -581,84 +605,85 @@ class ResultController extends Controller
       }
       // dd($dataKriteria[7]);
       // dd($dataKriteria[7][2]);
-      foreach ($dataKriteria as $kdK => $dK) {
-        foreach ($dK as $dKkey => $dKvalue) {
-          foreach ($dKvalue as $DKkey => $DKvalue) {
-            $mValue = null; //nilai M
-            $tList = null; //nilai Total
-            //dd($dataKriteria);
+      if ($dataKriteria != null) {
+        foreach ($dataKriteria as $kdK => $dK) {
+          foreach ($dK as $dKkey => $dKvalue) {
+            foreach ($dKvalue as $DKkey => $DKvalue) {
+              $mValue = null; //nilai M
+              $tList = null; //nilai Total
+              //dd($dataKriteria);
 
-            $n = 0;
-            foreach ($DKvalue as $key => $value) {
-              $mValue[] = pow(array_product($value),(1/count($DKvalue)));
-              $mTotal = 0;
-              foreach ($DKvalue as $k => $v) {
-                $mTotal += $DKvalue[$k][$n];
-              }
-              $n++;
-              $tList[] = $mTotal;
-            }
-            //nilai M total
-            // dd($mValue);
-            $mTotal = pow(array_product($tList), 1/count($DKvalue));
-            $ka[] = $mTotal;
-            //menghitung nilai bobot lokal
-            $bobotLokal = null;
-            foreach ($mValue as $key => $value) {
-              # code...
-              $bobotLokal[] = $value/$mTotal;
-            }
-            // dd($bobotLokal);
-            //menghitung nilai vektor bobot
-            $vektorBobotList = null;
-            foreach ($DKvalue  as $key => $value) {
-              $vektorBobot = 0;
-              //dd($vb);
-              //dd($value);
-              foreach ($value as $k => $v) {
-                  $vektorBobot += $v * $bobotLokal[$k];
-                  //var_dump($v);
-                  //var_dump($vektorBobot);
+              $n = 0;
+              foreach ($DKvalue as $key => $value) {
+                $mValue[] = pow(array_product($value),(1/count($DKvalue)));
+                $mTotal = 0;
+                foreach ($DKvalue as $k => $v) {
+                  $mTotal += $DKvalue[$k][$n];
                 }
-              $vektorBobotList[] = $vektorBobot;
+                $n++;
+                $tList[] = $mTotal;
+              }
+              //nilai M total
+              // dd($mValue);
+              $mTotal = pow(array_product($tList), 1/count($DKvalue));
+              $ka[] = $mTotal;
+              //menghitung nilai bobot lokal
+              $bobotLokal = null;
+              foreach ($mValue as $key => $value) {
+                # code...
+                $bobotLokal[] = $value/$mTotal;
+              }
+              // dd($bobotLokal);
+              //menghitung nilai vektor bobot
+              $vektorBobotList = null;
+              foreach ($DKvalue  as $key => $value) {
+                $vektorBobot = 0;
+                //dd($vb);
+                //dd($value);
+                foreach ($value as $k => $v) {
+                    $vektorBobot += $v * $bobotLokal[$k];
+                    //var_dump($v);
+                    //var_dump($vektorBobot);
+                  }
+                $vektorBobotList[] = $vektorBobot;
+              }
+
+              //dd($vektorBobotList);
+              //menghitung nilai W/w
+              $Wperw = null;
+              foreach ($vektorBobotList as $key => $value) {
+                $Wperw[] = $value / $bobotLokal[$key];
+              }
+
+              $data = [
+                "dataPemasok" => $dK,
+                "mValue" => $mValue,
+                "tList" => $tList,
+                "mTotal"  => $mTotal,
+                "bobotLokal" => $bobotLokal,
+                "bobotVektor"  => $vektorBobotList,
+                "Wperw" => $Wperw,
+                "expert_id" => $kdK,
+                "kriteria_id" => $dKkey,
+                "sub_kriteria_id" => $DKkey
+              ];
+
+              //dd(serialize($data));
+              //dd(serialize($data));
+              $store = new PemasokSubResult();
+              $store->data = serialize($data);
+              $store->expert_id = $kdK;
+              $store->kriteria_id = $dKkey;
+              $store->sub_kriteria_id = $DKkey;
+              $hasil = $store->save();
+              if(!$hasil) return false;
             }
-
-            //dd($vektorBobotList);
-            //menghitung nilai W/w
-            $Wperw = null;
-            foreach ($vektorBobotList as $key => $value) {
-              $Wperw[] = $value / $bobotLokal[$key];
-            }
-
-            $data = [
-              "dataPemasok" => $dK,
-              "mValue" => $mValue,
-              "tList" => $tList,
-              "mTotal"  => $mTotal,
-              "bobotLokal" => $bobotLokal,
-              "bobotVektor"  => $vektorBobotList,
-              "Wperw" => $Wperw,
-              "expert_id" => $kdK,
-              "kriteria_id" => $dKkey,
-              "sub_kriteria_id" => $DKkey
-            ];
-
-            //dd(serialize($data));
-            //dd(serialize($data));
-            $store = new PemasokSubResult();
-            $store->data = serialize($data);
-            $store->expert_id = $kdK;
-            $store->kriteria_id = $dKkey;
-            $store->sub_kriteria_id = $DKkey;
-            $hasil = $store->save();
-            if(!$hasil) return false;
           }
-        }
-        //dd($kriterias);
-        //dd($dataKriteria);
+          //dd($kriterias);
+          //dd($dataKriteria);
 
+        }
       }
-      // dd($ka);
       return $hasil;
     }
 
@@ -716,80 +741,83 @@ class ResultController extends Controller
       }
       // dd($dataKriteria[7]);
       // dd($dataKriteria[9][1][23]);
-      $aaaa = [];
-      foreach ($dataKriteria as $keydata => $value) {
-        foreach ($value as $keyv => $valuev) {
-          foreach ($valuev as $keyvv => $valuevv) {
-            $sifu = [];
-            foreach ($valuevv as $k => $v) {
-              $l =0;
-              $m = 0;
-              $u = 0;
-              foreach ($v as $kunci => $nilai) {
-                $l += $nilai[0];
-                $m +=$nilai[1];
-                $u +=$nilai[2];
+      if ($dataKriteria!=null) {
+        $aaaa = [];
+        foreach ($dataKriteria as $keydata => $value) {
+          foreach ($value as $keyv => $valuev) {
+            foreach ($valuev as $keyvv => $valuevv) {
+              $sifu = [];
+              foreach ($valuevv as $k => $v) {
+                $l =0;
+                $m = 0;
+                $u = 0;
+                foreach ($v as $kunci => $nilai) {
+                  $l += $nilai[0];
+                  $m +=$nilai[1];
+                  $u +=$nilai[2];
+                }
+                $sifu[] = [$l, $m, $u];
+                // dd($sifu);
+              //  echo json_encode($sifu);
               }
-              $sifu[] = [$l, $m, $u];
-              // dd($sifu);
-            //  echo json_encode($sifu);
-            }
-            // $sum = array_sum($sifu[0]);
-            $tl=0;
-            $tm=0;
-            $tu=0;
+              // $sum = array_sum($sifu[0]);
+              $tl=0;
+              $tm=0;
+              $tu=0;
 
-            foreach ($sifu as $ks => $vs) {
-              $tl += $vs[0];
-              $tm += $vs[1];
-              $tu += $vs[2];
-            }
+              foreach ($sifu as $ks => $vs) {
+                $tl += $vs[0];
+                $tm += $vs[1];
+                $tu += $vs[2];
+              }
 
-            //dd($tu);
-            $sifuArray = [$tl, $tm, $tu];
-            // dd($sifuArray);
-            //var_dump(json_encode($sifu));
-            $Si = [];
-            foreach ($sifu as $key => $vfu) {
-              $Si[] = [$vfu[0]/ $tu, $vfu[1]/$tm, $vfu[2]/$tl];
-            }
-            // dd($sifuArray);
-            $sintesis = ["jumlah"=>$sifu, "total"=>$sifuArray, "si"=>$Si];
-            // dd($sintesis);
-            $vektoArray = [];
-            foreach ($Si as $key => $vfu) {
-              $vektor = [];
-              foreach ($Si as $k => $v) {
-                if($key!=$k){
-                  if ($vfu[1]>=$v[1]) {
-                    $vektor[] = 1;
-                  }elseif ($v[0]>=$vfu[2]) {
-                    $vektor[] = 0;
-                  }else{
-                    $vektor[]=($v[0]-$vfu[2])/(($vfu[1]-$vfu[2])-($v[1]-$v[0]));
+              //dd($tu);
+              $sifuArray = [$tl, $tm, $tu];
+              // dd($sifuArray);
+              //var_dump(json_encode($sifu));
+              $Si = [];
+              foreach ($sifu as $key => $vfu) {
+                $Si[] = [$vfu[0]/ $tu, $vfu[1]/$tm, $vfu[2]/$tl];
+              }
+              // dd($sifuArray);
+              $sintesis = ["jumlah"=>$sifu, "total"=>$sifuArray, "si"=>$Si];
+              // dd($sintesis);
+              $vektoArray = [];
+              foreach ($Si as $key => $vfu) {
+                $vektor = [];
+                foreach ($Si as $k => $v) {
+                  if($key!=$k){
+                    if ($vfu[1]>=$v[1]) {
+                      $vektor[] = 1;
+                    }elseif ($v[0]>=$vfu[2]) {
+                      $vektor[] = 0;
+                    }else{
+                      $vektor[]=($v[0]-$vfu[2])/(($vfu[1]-$vfu[2])-($v[1]-$v[0]));
+                    }
                   }
                 }
+                $vektoArray[] = $vektor;
               }
-              $vektoArray[] = $vektor;
+              $aaaa[$keydata][$keyv][$keyvv][]=$sintesis;
+              // dd($vektoArray);
+              $data = ["sisntesis" => $sintesis, "vektor"=>$vektoArray];
+              $objek = new PemasokSubFuzzyResult();
+              $objek->data = serialize($data);
+              $objek->expert_id = $keydata;
+              $objek->kriteria_id = $keyv;
+              $objek->sub_kriteria_id = $keyvv;
+              $hasil = $objek->save();
+              // dd($keydata);
+              if(!$hasil) return false;
+
             }
-            $aaaa[$keydata][$keyv][$keyvv][]=$sintesis;
-            // dd($vektoArray);
-            $data = ["sisntesis" => $sintesis, "vektor"=>$vektoArray];
-            $objek = new PemasokSubFuzzyResult();
-            $objek->data = serialize($data);
-            $objek->expert_id = $keydata;
-            $objek->kriteria_id = $keyv;
-            $objek->sub_kriteria_id = $keyvv;
-            $hasil = $objek->save();
-            // dd($keydata);
-            if(!$hasil) return false;
+            }
 
           }
-          }
+          // dd($aaaa[9][1][23]);
+          return $hasil;
+      }
 
-        }
-        // dd($aaaa[9][1][23]);
-        return $hasil;
 
     }
 
