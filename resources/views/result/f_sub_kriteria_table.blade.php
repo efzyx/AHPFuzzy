@@ -62,7 +62,7 @@
             </tbody>
             <tfoot>
               <tr id="{!! $tr2!!}">
-                <th colspan="4">Total</th>
+                <th colspan="{!! $expert->count()+1 !!}">Total</th>
                 <th>{!! $totot !!}</th>
               </tr>
             </tfoot>

@@ -160,13 +160,13 @@ class KriteriaController extends AppBaseController
         $kriteriaKriteria2 = KriteriaKriteria::where('kriteria2_id', '=', $id);
         // dd($kriteriaKriteria);
         $kriteriaKriteria1->delete();
-        $kriteria_kriterias_kriteria2_id_foreign->delete();
+        $kriteriaKriteria2->delete();
         $subKriterias = SubKriteria::all()->where('kriteria_id','=',$id);
         foreach ($subKriterias as $key => $sub) {
           SubKriteriaSubKriteria::where('sub_kriteria1_id','=', $sub->id)->delete();
           SubKriteriaSubKriteria::where('sub_kriteria2_id','=', $sub->id)->delete();
         }
-        SubKriteriaSubKriteria::where('kriteria_id','=', $id)->delete();
+        SubKriteria::where('kriteria_id','=', $id)->delete();
         PemasokSub::where('kriteria_id', '=', $id)->delete();
         ExpertKriteriaComparison::truncate();
         ExpertSubComparison::truncate();

@@ -13,6 +13,13 @@ use Response;
 use App\Models\Kriteria;
 use App\Models\SubKriteria;
 use App\Models\SubKriteriaSubKriteria;
+use App\Models\PemasokSub;
+use App\ExpertKriteriaComparison;
+use App\ExpertSubComparison;
+use App\FuzzyKriteria;
+use App\FuzzySub;
+use App\PemasokSubFuzzyResult;
+use App\PemasokSubResult;
 
 class SubKriteriaController extends AppBaseController
 {
@@ -151,10 +158,11 @@ class SubKriteriaController extends AppBaseController
         if (empty($subKriteria)) {
             Flash::error('Sub Kriteria not found');
 
-            return redirect(route('subKriterias.index'));
+            return \App::make('redirect')->back();
         }
         PemasokSub::where('sub_kriteria_id', '=', $id)->delete();
-        SubKriteriaSubKriteria::where('sub_kriteria_id', '=', $id)->delete();
+        SubKriteriaSubKriteria::where('sub_kriteria1_id', '=', $id)->delete();
+        SubKriteriaSubKriteria::where('sub_kriteria2_id', '=', $id)->delete();
         ExpertKriteriaComparison::truncate();
         ExpertSubComparison::truncate();
         FuzzyKriteria::truncate();
@@ -166,6 +174,6 @@ class SubKriteriaController extends AppBaseController
 
         Flash::success('Sub Kriteria deleted successfully.');
 
-        return redirect(route('subKriterias.index'));
+        return \App::make('redirect')->back();
     }
 }
