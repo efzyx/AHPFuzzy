@@ -16,11 +16,9 @@ class ExpertKriteriaComparison extends Migration
       Schema::create('expert_kriteria_comparisons', function (Blueprint $table) {
           $table->increments('id');
           $table->longText('data');
-          $table->integer('kriteria_id')->unsigned();
 
           $table->timestamps();
           $table->softDeletes();
-          $table->foreign('kriteria_id')->references('id')->on('kriterias');
       });
     }
 
