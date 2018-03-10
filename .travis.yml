@@ -8,12 +8,12 @@ before_script:
   - mysql -e 'create database homestead_test;'
   - composer self-update
   - composer install --no-interaction
-  - pear install pear/PHP_CodeSniffer
-  - phpenv rehash
+  # - pear install pear/PHP_CodeSniffer
+  # - phpenv rehash
   - php artisan key:generate
   - php artisan migrate --seed
 
 script:
   - vendor/bin/phpunit
-  - phpcs --ignore=app/Http/Controllers/Auth,app/Http/Controllers/Controller.php app/Http/Controllers
+  # - phpcs --ignore=app/Http/Controllers/Auth,app/Http/Controllers/Controller.php app/Http/Controllers
 
