@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/fauzipadlaw/ahp-fuzzy.svg?branch=master)](https://travis-ci.org/fauzipadlaw/ahp-fuzzy)
+
 # Sistem Pendukung Keputusan AHP-Fuzzy
 `composer update`
 
