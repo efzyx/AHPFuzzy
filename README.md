@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/fauzipadlaw/ahp-fuzzy.svg?branch=master)](https://travis-ci.org/fauzipadlaw/ahp-fuzzy)
 
+## [Klik Untuk Demo Aplikasi](http://fuzzy-ahp.herokuapp.com)
+
 # Sistem Pendukung Keputusan AHP-Fuzzy
 `composer update`
 
