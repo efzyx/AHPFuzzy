@@ -174,6 +174,6 @@ class SubKriteriaController extends AppBaseController
 
         Flash::success('Sub Kriteria deleted successfully.');
 
-        return \App::make('redirect')->back();
+        return redirect()->back();
     }
 }

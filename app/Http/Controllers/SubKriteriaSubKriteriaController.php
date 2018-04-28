@@ -115,8 +115,7 @@ class SubKriteriaSubKriteriaController extends AppBaseController
 
         Flash::success('Sub Kriteria Sub Kriteria saved successfully.');
 
-        return \App::make('redirect')->back();
-        //redirect(route('subKriteriaSubKriterias.index'));
+        return redirect()->back();
     }
 
     /**
@@ -197,13 +196,13 @@ class SubKriteriaSubKriteriaController extends AppBaseController
       if (empty(count($subKriteriaSubKriteria->get()))) {
           Flash::error('Sub Kriteria Sub Kriteria not found');
 
-          return \App::make('redirect')->back();
+          return redirect()->back();
       }
 
       $subKriteriaSubKriteria->delete();
 
       Flash::success('Sub Kriteria Sub Kriteria deleted successfully.');
 
-      return \App::make('redirect')->back();
+      return redirect()->back();
     }
 }
