@@ -3,7 +3,8 @@
 ## [Klik Untuk Demo Aplikasi](http://fuzzy-ahp.herokuapp.com)
 
 # Sistem Pendukung Keputusan AHP-Fuzzy
-`composer update`
+
+`composer install`
 
 `cp .env.example .env`
 
