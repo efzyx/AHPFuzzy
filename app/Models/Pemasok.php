@@ -1,48 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Eloquent as Model;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class Pemasok
- * @package App\Models
- * @version October 16, 2017, 10:45 pm UTC
- *
- * @property string nama_pemasok
+ * @property int $id
+ * @property string $nama_pemasok
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  */
 class Pemasok extends Model
 {
     use SoftDeletes;
 
-    public $table = 'pemasoks';
-    
+    protected $table = 'pemasoks';
 
-    protected $dates = ['deleted_at'];
-
-
-    public $fillable = [
-        'nama_pemasok'
+    protected $fillable = [
+        'nama_pemasok',
     ];
 
-    /**
-     * The attributes that should be casted to native types.
-     *
-     * @var array
-     */
     protected $casts = [
-        'nama_pemasok' => 'string'
+        'nama_pemasok' => 'string',
+        'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Validation rules
-     *
-     * @var array
-     */
-    public static $rules = [
-        'nama_pemasok' => 'required'
+    public static array $rules = [
+        'nama_pemasok' => 'required|string|max:255',
     ];
-
-    
 }

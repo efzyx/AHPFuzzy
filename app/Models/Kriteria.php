@@ -1,65 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Eloquent as Model;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class Kriteria
- * @package App\Models
- * @version October 13, 2017, 3:08 pm UTC
- *
- * @property varchar nama_kriteria
+ * @property int $id
+ * @property string $nama_kriteria
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  */
 class Kriteria extends Model
 {
     use SoftDeletes;
 
-    public $table = 'kriterias';
+    protected $table = 'kriterias';
 
-
-    protected $dates = ['deleted_at'];
-
-
-    public $fillable = [
-        'nama_kriteria'
+    protected $fillable = [
+        'nama_kriteria',
     ];
 
-    /**
-     * The attributes that should be casted to native types.
-     *
-     * @var array
-     */
     protected $casts = [
-
+        'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Validation rules
-     *
-     * @var array
-     */
-    public static $rules = [
-        'nama_kriteria' => 'required'
+    public static array $rules = [
+        'nama_kriteria' => 'required|string|max:255',
     ];
 
-    public function next(){
-        return Kriteria::where('id', '>', $this->id)->orderBy('id','asc')->first();
-
-    }
-    public  function previous(){
-        return Kriteria::where('id', '<', $this->id)->orderBy('id','desc')->first();
-
+    public function next(): ?self
+    {
+        return self::where('id', '>', $this->id)
+            ->orderBy('id', 'asc')
+            ->first();
     }
 
-    public function subKriteria()
-   {
-       return $this->hasMany('App\Models\SubKriteria', 'kriteria_id', 'id');
-   }
+    public function previous(): ?self
+    {
+        return self::where('id', '<', $this->id)
+            ->orderBy('id', 'desc')
+            ->first();
+    }
 
-  public function expert()
-  {
-      return $this->hasMany('App\Models\Expert', 'kriteria_id', 'id');
-  }
+    public function subKriteria(): HasMany
+    {
+        return $this->hasMany(SubKriteria::class, 'kriteria_id');
+    }
+
+    public function expert(): HasMany
+    {
+        return $this->hasMany(Expert::class, 'kriteria_id');
+    }
 }

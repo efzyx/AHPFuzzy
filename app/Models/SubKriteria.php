@@ -1,75 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Eloquent as Model;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class SubKriteria
- * @package App\Models
- * @version October 13, 2017, 3:13 pm UTC
- *
- * @property integer kriteria_id
- * @property string nama_sub_kriteria
+ * @property int $id
+ * @property int $kriteria_id
+ * @property string $nama_sub_kriteria
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  */
 class SubKriteria extends Model
 {
     use SoftDeletes;
 
-    public $table = 'sub_kriterias';
+    protected $table = 'sub_kriterias';
 
-
-    protected $dates = ['deleted_at'];
-
-
-    public $fillable = [
+    protected $fillable = [
         'kriteria_id',
-        'nama_sub_kriteria'
+        'nama_sub_kriteria',
     ];
 
-    /**
-     * The attributes that should be casted to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'kriteria_id' => 'integer',
-        'nama_sub_kriteria' => 'string'
+        'nama_sub_kriteria' => 'string',
+        'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Validation rules
-     *
-     * @var array
-     */
-    public static $rules = [
-        'kriteria_id' => 'required',
-        'nama_sub_kriteria' => 'required'
+    public static array $rules = [
+        'kriteria_id' => 'required|integer|exists:kriterias,id',
+        'nama_sub_kriteria' => 'required|string|max:255',
     ];
 
-          public function kriteria()
-          {
-              return $this->belongsTo('App\Models\Kriteria', 'kriteria_id', 'id');
-          }
+    public function kriteria(): BelongsTo
+    {
+        return $this->belongsTo(Kriteria::class, 'kriteria_id');
+    }
 
-          public function expert()
-          {
-              return $this->belongsTo('App\Models\Expert', 'expert_id', 'id');
-          }
+    public function expert(): BelongsTo
+    {
+        return $this->belongsTo(Expert::class, 'expert_id');
+    }
 
-          // public function subKriteria()
-          // {
-          //     return $this->hasMany('App\Models\SubKriteriaSubKriteria', 'sub_kriteria1_id', 'id');
-          // }
+    public function next(): ?self
+    {
+        return self::where('id', '>', $this->id)
+            ->orderBy('id', 'asc')
+            ->first();
+    }
 
-          public function next(){
-              return SubKriteria::where('id', '>', $this->id)->orderBy('id','asc')->first();
-
-          }
-          public  function previous(){
-              return SubKriteria::where('id', '<', $this->id)->orderBy('id','desc')->first();
-
-          }
-
+    public function previous(): ?self
+    {
+        return self::where('id', '<', $this->id)
+            ->orderBy('id', 'desc')
+            ->first();
+    }
 }
